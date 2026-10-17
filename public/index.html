@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Applicant Evaluator</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #fff; --text: #1b1f24; --muted: #5f6b7a; --line: #e2e6eb;
+    --accent: #2f5bd3; --accent-soft: #e8eefc; --good: #1f8a4c; --warn: #b26a00; --bad: #c0362c;
+    --bar: #dfe4ea;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #111418; --panel: #191d23; --text: #e6e9ed; --muted: #9aa5b1; --line: #2a3038;
+      --accent: #7b9cff; --accent-soft: #1e2840; --good: #4cc27f; --warn: #e3a33b; --bad: #ef6b60; --bar: #2a3038; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+  header { display: flex; align-items: center; gap: 24px; padding: 14px 24px; border-bottom: 1px solid var(--line); background: var(--panel); flex-wrap: wrap; }
+  header h1 { font-size: 17px; margin: 0; }
+  nav button { background: none; border: 0; padding: 6px 12px; border-radius: 6px; color: var(--muted); font: inherit; cursor: pointer; }
+  nav button.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  #cfg { margin-left: auto; color: var(--muted); font-size: 13px; }
+  main { max-width: 1000px; margin: 0 auto; padding: 24px 16px 60px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  input { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font: inherit; }
+  .btn { margin-top: 16px; background: var(--accent); color: #fff; border: 0; border-radius: 6px; padding: 10px 18px; font: inherit; font-weight: 600; cursor: pointer; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .muted { color: var(--muted); }
+  .error { color: var(--bad); }
+  #steps { list-style: none; padding: 0; margin: 12px 0 0; font-size: 14px; }
+  #steps li::before { content: "✓ "; color: var(--good); }
+  #steps li:last-child::before { content: "… "; color: var(--accent); }
+  .hero { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+  .score { font-size: 46px; font-weight: 700; line-height: 1; }
+  .score small { font-size: 16px; color: var(--muted); font-weight: 400; }
+  .chip { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 99px; background: var(--bar); color: var(--muted); margin: 2px 4px 2px 0; }
+  .chip.warn { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+  .chip.bad { background: color-mix(in srgb, var(--bad) 18%, transparent); color: var(--bad); }
+  .chip.good { background: color-mix(in srgb, var(--good) 18%, transparent); color: var(--good); }
+  .dim { display: grid; grid-template-columns: 190px 1fr 40px; gap: 10px; align-items: center; margin: 8px 0; }
+  .dim .reason { grid-column: 2 / 4; font-size: 13px; color: var(--muted); margin-top: -6px; }
+  .bar { height: 8px; background: var(--bar); border-radius: 4px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: var(--accent); }
+  h2 { font-size: 15px; margin: 0 0 10px; }
+  h3 { font-size: 14px; margin: 14px 0 6px; }
+  ul.tight { margin: 0; padding-left: 18px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: var(--accent-soft); }
+  .repo { border-top: 1px solid var(--line); padding: 10px 0; }
+  .repo:first-child { border-top: 0; }
+  a { color: var(--accent); }
+  details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+  pre { white-space: pre-wrap; font-size: 12px; background: var(--bg); padding: 10px; border-radius: 6px; overflow-x: auto; }
+  @media (max-width: 600px) { .dim { grid-template-columns: 1fr 40px; } .dim .bar { grid-column: 1 / 3; grid-row: 2; } .dim .reason { grid-column: 1 / 3; margin-top: 0; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Applicant Evaluator</h1>
+  <nav><button data-tab="evaluate" class="active">Evaluate</button><button data-tab="results">Results</button></nav>
+  <span id="cfg"></span>
+</header>
+<main>
+  <section id="tab-evaluate">
+    <form id="form" class="panel">
+      <h2>New evaluation</h2>
+      <div class="grid">
+        <div><label for="id">Applicant ID (optional)</label><input id="id" name="id" placeholder="A-1042"></div>
+        <div><label for="name">Name (not sent to the model)</label><input id="name" name="name"></div>
+        <div><label for="github">GitHub username or URL</label><input id="github" name="github" placeholder="github.com/username"></div>
+        <div><label for="cv">CV (PDF)</label><input id="cv" name="cv" type="file" accept="application/pdf,.pdf"></div>
+      </div>
+      <button class="btn" id="submit">Evaluate</button>
+      <p class="muted" style="font-size:13px;margin:10px 0 0">If you leave GitHub empty, a github.com link found in the CV is used.</p>
+      <ul id="steps"></ul>
+      <p id="formError" class="error"></p>
+    </form>
+    <div id="result"></div>
+  </section>
+
+  <section id="tab-results" hidden>
+    <div class="panel">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+        <h2 style="margin:0">All evaluations <span id="count" class="muted"></span></h2>
+        <a class="btn" id="export" href="/api/export.xlsx" style="margin:0 0 0 auto;text-decoration:none;font-size:14px;padding:8px 14px">Export to Excel</a>
+      </div>
+      <table><thead><tr><th>#</th><th>Applicant</th><th>GitHub</th><th>Score</th><th>Confidence</th><th>Flags</th></tr></thead><tbody id="rows"></tbody></table>
+    </div>
+    <div id="detail"></div>
+  </section>
+</main>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => {
+  document.querySelectorAll('nav button').forEach((x) => x.classList.toggle('active', x === b));
+  $('#tab-evaluate').hidden = b.dataset.tab !== 'evaluate';
+  $('#tab-results').hidden = b.dataset.tab !== 'results';
+  if (b.dataset.tab === 'results') loadResults();
+}));
+
+fetch('/api/config').then((r) => r.json()).then((c) => {
+  $('#cfg').textContent = `${c.endpoint} · fast: ${c.fastModel || 'unset'} · judge: ${c.strongModel || 'unset'}${c.githubToken ? '' : ' · no GitHub token'}`;
+});
+
+$('#form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('#formError').textContent = '';
+  $('#result').innerHTML = '';
+  $('#steps').innerHTML = '';
+  $('#submit').disabled = true;
+  try {
+    const res = await fetch('/api/evaluate', { method: 'POST', body: new FormData(e.target) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    for (;;) {
+      await sleep(1000);
+      const job = await (await fetch(`/api/jobs/${data.jobId}`)).json();
+      $('#steps').innerHTML = job.steps.map((s) => `<li>${esc(s)}</li>`).join('');
+      if (job.status === 'error') throw new Error(job.error);
+      if (job.status === 'done') { $('#steps').innerHTML = ''; $('#result').innerHTML = renderResult(job.result); break; }
+    }
+  } catch (err) {
+    $('#formError').textContent = err.message;
+  } finally {
+    $('#submit').disabled = false;
+  }
+});
+
+const FLAG_LABELS = {
+  possible_prompt_injection: ['Possible prompt injection', 'bad'], cv_unreadable: ['CV unreadable', 'bad'], cv_missing: ['No CV', 'warn'],
+  cv_very_short: ['CV very short (scanned?)', 'warn'], cv_truncated: ['CV truncated', ''], no_github: ['No GitHub', 'warn'],
+  github_not_found: ['GitHub not found', 'bad'], github_is_organization: ['GitHub link is an organization', 'warn'], github_no_original_repos: ['No original repos', 'warn'], judge_incomplete: ['Judge output incomplete', 'warn'],
+};
+const flagChips = (flags) => (flags || []).map((f) => { const [l, c] = FLAG_LABELS[f] || [f, '']; return `<span class="chip ${c}">${esc(l)}</span>`; }).join('');
+const list = (items) => items?.length ? `<ul class="tight">${items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : '<p class="muted">None</p>';
+
+function renderResult(r) {
+  const dims = Object.values(r.dimensions).map((d) => `
+    <div class="dim"><div>${esc(d.label)} <span class="muted">(${d.weight}%)</span></div>
+    <div class="bar"><span style="width:${d.score * 10}%"></span></div><strong>${d.score}</strong>
+    <div class="reason">${esc(d.reason)}</div></div>`).join('');
+  const repos = (r.evidence.repos || []).map((x) => `
+    <div class="repo"><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.repo)}</a> <span class="muted">★${x.stars}</span>
+      <span class="chip">AI ${x.ai_relevance}</span><span class="chip">eng ${x.engineering_quality}</span><span class="chip">complexity ${x.complexity}</span><span class="chip">originality ${x.originality}</span><span class="chip ${x.authorship === 'low' ? 'bad' : ''}">authorship ${esc(x.authorship)}</span>
+      <div>${esc(x.what_it_is)}</div>${x.red_flags.length ? `<div class="error" style="font-size:13px">${x.red_flags.map(esc).join(' · ')}</div>` : ''}</div>`).join('');
+  const c = r.evidence.critic;
+  const u = r.usage;
+  const cv = r.evidence.cv;
+  const sk = r.skills;
+  const skills = sk?.skills?.length ? sk.skills.map((s) => `
+    <div class="dim"><div>${esc(s.skill)}</div>
+    <div class="bar"><span style="width:${s.level * 20}%"></span></div><strong>${s.level}/5</strong>
+    <div class="reason">${s.evidence.map((e) => `<span class="chip">${esc(e.replace('_', ' '))}</span>`).join('')} ${esc(s.basis)}</div></div>`).join('') : '<p class="muted">No skills identified.</p>';
+  const months = (m) => (m ? ` · ${m} mo` : '');
+  const section = (title, items, fmt) => items?.length ? `<div><h3>${title}</h3><ul class="tight">${items.map((x) => `<li>${fmt(x)}</li>`).join('')}</ul></div>` : '';
+  const profile = cv ? `
+  <div class="panel"><h2>Applicant profile <span class="muted" style="font-weight:400">· ${cv.relevant_months_total} months relevant experience</span></h2>
+    <div class="grid">
+      ${section('Experience', cv.experience, (x) => `<strong>${esc(x.role)}</strong> <span class="muted">${esc(x.type)}, ${esc(x.org_type)}${months(x.months)}</span>${x.ai_related ? ' <span class="chip good">AI</span>' : ''}${x.highlights.map((h) => `<div class="muted" style="font-size:13px">${esc(h)}</div>`).join('')}`)}
+      ${section('Education', cv.education, (e) => `${esc(e.level)} ${esc(e.field)} <span class="muted">(${esc(e.status)}${e.grad_year ? ', ' + e.grad_year : ''})</span>${e.honors ? `<div class="muted" style="font-size:13px">${esc(e.honors)}</div>` : ''}${e.relevant_coursework.length ? `<div class="muted" style="font-size:13px">${e.relevant_coursework.map(esc).join(', ')}</div>` : ''}`)}
+      ${section('Certifications', cv.certifications, (x) => `${esc(x.name)} <span class="muted">${esc(x.issuer)}${x.year ? ' ' + x.year : ''}</span> <span class="chip ${x.rigor === 'completion' ? '' : x.rigor === 'unknown' ? 'warn' : 'good'}">${esc(x.rigor)}</span>${x.has_credential_id ? '<span class="chip">credential ID</span>' : ''}`)}
+      ${section('Courses', cv.courses, (x) => `${esc(x.name)} <span class="muted">${esc(x.provider)}</span>${x.ai_related ? ' <span class="chip good">AI</span>' : ''}`)}
+      ${section('Projects', cv.projects, (x) => `<strong>${esc(x.name)}</strong> <span class="chip">${esc(x.evidence)}</span>${x.ai_related ? '<span class="chip good">AI</span>' : ''}<div class="muted" style="font-size:13px">${esc(x.summary)}</div>`)}
+      ${section('Competitions & awards', cv.competitions_awards, (x) => `${esc(x.name)} <span class="muted">${esc(x.result)}</span>`)}
+      ${section('Research & publications', cv.research_publications, esc)}
+      ${section('Extracurricular & leadership', cv.extracurricular, (x) => `${esc(x.activity)} <span class="muted">${esc(x.role)}${months(x.months)}</span>${x.tech_related ? ' <span class="chip good">tech</span>' : ''}<div class="muted" style="font-size:13px">${esc(x.summary)}</div>`)}
+    </div>
+  </div>` : '';
+  return `
+  <div class="panel">
+    <div class="hero">
+      <div class="score">${r.agent_score}<small> / 100</small></div>
+      <div>
+        <div><strong>${esc(r.name || r.id)}</strong> ${r.github_url ? `· <a href="${esc(r.github_url)}" target="_blank" rel="noopener">${esc(r.github)}</a>` : ''}</div>
+        <div><span class="chip ${r.confidence === 'low' ? 'warn' : 'good'}">confidence ${esc(r.confidence)}</span>${r.needs_human_review ? '<span class="chip bad">needs human review</span>' : ''}${flagChips(r.flags)}</div>
+      </div>
+    </div>
+    <h3>Summary for video reviewers</h3><p style="margin:0">${esc(r.summary)}</p>
+  </div>
+  <div class="panel"><h2>Rubric</h2>${dims}</div>
+  <div class="panel"><h2>Skills map</h2>${sk?.profile ? `<p style="margin:0 0 8px">${esc(sk.profile)}</p>` : ''}${skills}
+    ${sk?.gaps?.length ? `<h3>Gaps</h3>${list(sk.gaps)}` : ''}</div>
+  ${profile}
+  <div class="panel grid">
+    <div><h2>Strengths</h2>${list(r.strengths)}</div>
+    <div><h2>Concerns</h2>${list(r.concerns)}</div>
+    <div><h2>Questions for the video</h2>${list(r.video_questions)}</div>
+  </div>
+  <div class="panel"><h2>Skeptical Reviewer</h2>
+    <div class="grid"><div><h3>Supported claims</h3>${list(c.supported_claims)}</div><div><h3>Unsupported claims</h3>${list(c.unsupported_claims)}</div><div><h3>Contradictions</h3>${list(c.contradictions)}</div></div>
+    <h3>Concerns</h3>${c.concerns.length ? c.concerns.map((x) => `<span class="chip ${x.severity === 'high' ? 'bad' : x.severity === 'medium' ? 'warn' : ''}">${esc(x.severity)}</span> ${esc(x.issue)}<br>`).join('') : '<p class="muted">None</p>'}
+  </div>
+  ${repos ? `<div class="panel"><h2>Repositories reviewed</h2>${repos}</div>` : ''}
+  <div class="panel">
+    <details><summary>Tokens: ${u.totalTokens.toLocaleString()} (${u.calls} calls, ${u.cacheHits} cached) · ${(r.duration_ms / 1000).toFixed(1)}s · full JSON</summary><pre>${esc(JSON.stringify(r, null, 2))}</pre></details>
+  </div>`;
+}
+
+async function loadResults() {
+  const rows = await (await fetch('/api/results')).json();
+  $('#count').textContent = `(${rows.length})`;
+  $('#rows').innerHTML = rows.length ? rows.map((r, i) => `
+    <tr data-id="${esc(r.id)}"><td>${i + 1}</td><td>${esc(r.name || r.id)}</td><td>${esc(r.github || '-')}</td>
+    <td><strong>${r.agent_score}</strong></td><td>${esc(r.confidence)}</td>
+    <td>${r.needs_human_review ? '<span class="chip bad">review</span>' : ''}${flagChips(r.flags)}</td></tr>`).join('')
+    : '<tr><td colspan="6" class="muted">No evaluations yet.</td></tr>';
+  document.querySelectorAll('#rows tr[data-id]').forEach((tr) => tr.addEventListener('click', async () => {
+    const r = await (await fetch(`/api/results/${encodeURIComponent(tr.dataset.id)}`)).json();
+    $('#detail').innerHTML = renderResult(r);
+    $('#detail').scrollIntoView({ behavior: 'smooth' });
+  }));
+}
+</script>
+</body>
+</html>

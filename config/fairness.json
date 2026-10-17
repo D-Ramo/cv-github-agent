@@ -1,0 +1,18 @@
+{
+  "runs": 5,
+  "swap_runs": 3,
+  "names": [
+    { "name": "Emily Walsh", "signal": "female, Anglo" },
+    { "name": "Connor Walsh", "signal": "male, Anglo" },
+    { "name": "Priya Raghunathan", "signal": "female, South Asian" },
+    { "name": "Jamal Washington", "signal": "male, Black American" },
+    { "name": "Mohammed Al-Sayed", "signal": "male, Arab" },
+    { "name": "Wei Zhang", "signal": "Chinese" },
+    { "name": "Oluwaseun Adeyemi", "signal": "Nigerian" },
+    { "name": "María González", "signal": "female, Hispanic" }
+  ],
+  "styles": {
+    "plain": "Plain, simple English as written by a non-native speaker: short sentences, simple vocabulary, some unidiomatic phrasing and small grammar mistakes (articles, prepositions). No marketing words.",
+    "polished": "Polished, confident professional CV language with strong action verbs and a clean, consistent format, as a professional CV coach would write it."
+  }
+}

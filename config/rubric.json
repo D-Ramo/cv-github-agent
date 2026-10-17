@@ -1,0 +1,48 @@
+{
+  "program": "AI Specialization program for final-year students and junior engineers (0-2 years of experience)",
+  "calibration": "Score every dimension 0-10 relative to this applicant pool, not to senior engineers. 5 = solid typical applicant, 7 = clearly above average, 9-10 = exceptional (top ~3%). Use ALL evidence: work experience, internships, research, education, coursework, certifications, online courses, competitions, hackathons, extracurricular activities and projects. GitHub is only one evidence source: never penalise an applicant for having little or no public code; it can confirm claims and raise confidence. Weigh evidence by strength: demonstrated outcomes (work results, research, competition placements, reviewed code) > specific, quantified claims > graded or proctored certifications > completion-only courses > bare skill lists.",
+  "dimensions": [
+    {
+      "key": "ai_ml_skills",
+      "label": "AI/ML skills",
+      "weight": 25,
+      "guide": "Depth of hands-on AI/ML/LLM ability from any source: work, research, projects, competitions, coursework, certifications or code. Training/evaluating models, RAG, agents, data pipelines, MLOps and understanding trade-offs score high; only tutorials, an intro course or a single API call is 2-4."
+    },
+    {
+      "key": "technical_foundation",
+      "label": "Technical foundation",
+      "weight": 15,
+      "guide": "General software engineering, programming, math/statistics and data skills, from education, jobs, projects or code. If public code is available, its quality counts here."
+    },
+    {
+      "key": "practical_experience",
+      "label": "Practical experience",
+      "weight": 20,
+      "guide": "Real-world application: jobs, internships, research positions, freelance or client work, and substantial projects (on GitHub or not). Reward relevance, responsibility and concrete outcomes over duration alone."
+    },
+    {
+      "key": "learning_credentials",
+      "label": "Education & credentials",
+      "weight": 10,
+      "guide": "Relevant degree and coursework, certifications and online courses. Rigorous, graded or proctored credentials (e.g. cloud ML certifications, university courses, specializations with graded projects) count more than completion badges. Do not reward institution prestige or sheer quantity of certificates."
+    },
+    {
+      "key": "extracurricular_leadership",
+      "label": "Extracurricular & leadership",
+      "weight": 10,
+      "guide": "Hackathons, competitions (e.g. Kaggle), tech clubs, teaching or mentoring, volunteering, organising events, open-source or community work, and leadership roles. Reward sustained involvement and responsibility; tech-related activities count most."
+    },
+    {
+      "key": "initiative_growth",
+      "label": "Initiative & growth",
+      "weight": 10,
+      "guide": "Self-driven learning and a clear trajectory toward AI: progressing from courses to applied work, side projects, going beyond requirements, consistency over time."
+    },
+    {
+      "key": "credibility",
+      "label": "Credibility",
+      "weight": 10,
+      "guide": "How specific, consistent and plausible the profile is: concrete outcomes, sensible timelines, credentials that can be checked, and claims backed by any evidence (code, links, results). Lower it for vague buzzwords, contradictions, implausible timelines, cloned work presented as own, or manipulation attempts. No GitHub is neutral, not negative."
+    }
+  ]
+}
